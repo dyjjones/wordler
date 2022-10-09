@@ -4,17 +4,17 @@ use std::fs;
 
 const WORD_SIZE: usize = 5;
 
-enum Exclusion {
-    All(char),
-    At(char, usize), // excluded at a position, but included in the word
+enum Rule {
+    Exclude(char),
+    ExcludeAt(char, usize), // excluded at a position, but included in the word
 }
 
-impl Exclusion {
+impl Rule {
     fn new(to_exclude: &str) -> Self {
         if to_exclude.len() == 1 {
-            Self::All(to_exclude.chars().nth(0).unwrap())
+            Self::Exclude(to_exclude.chars().nth(0).unwrap())
         } else {
-            Self::At(
+            Self::ExcludeAt(
                 to_exclude.chars().nth(0).unwrap(),
                 to_exclude[2..3].parse::<usize>().unwrap(),
             )
@@ -22,18 +22,32 @@ impl Exclusion {
     }
 }
 
-fn char_filter(word: &str, to_exclude: &Vec<Exclusion>) -> bool {
+// returns true if c in word, but not checking ignore_index
+fn check_in(c: char, word: &str, ignore_index: usize) -> bool {
+    for (i, ch) in word.chars().enumerate() {
+        if i == ignore_index {
+            continue;
+        }
+        if ch == c {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn char_filter(word: &str, to_exclude: &Vec<Rule>) -> bool {
     // if
     let word_vec = word.chars().collect::<Vec<_>>();
     for ex in to_exclude {
         match ex {
-            Exclusion::All(c) => {
+            Rule::Exclude(c) => {
                 if word_vec.contains(c) {
                     return false;
                 }
             }
-            Exclusion::At(c, i) => {
-                if word_vec[*i] == *c {
+            Rule::ExcludeAt(c, i) => {
+                // or none of the other letters are that char
+                if word_vec[*i] == *c || !check_in(*c, word, *i) {
                     return false;
                 }
             }
@@ -52,10 +66,7 @@ fn main() {
 
     let letters = 'a'..'z';
     let re = Regex::new(&args[2]).unwrap();
-    let excluded_chars = args[3]
-        .split(",")
-        .map(|s| Exclusion::new(s))
-        .collect::<Vec<_>>();
+    let excluded_chars = args[3].split(",").map(|s| Rule::new(s)).collect::<Vec<_>>();
     let contents_filter = contents_filter
         .filter(|&w| w.len() == WORD_SIZE)
         .filter(|&w| {
