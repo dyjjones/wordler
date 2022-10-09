@@ -66,7 +66,13 @@ fn main() {
 
     let letters = 'a'..'z';
     let re = Regex::new(&args[2]).unwrap();
-    let excluded_chars = args[3].split(",").map(|s| Rule::new(s)).collect::<Vec<_>>();
+
+    let excluded_chars = if args.len() <= 4 || args[3].len() == 0 {
+        vec![]
+    } else {
+        args[3].split(",").map(|s| Rule::new(s)).collect::<Vec<_>>()
+    };
+
     let contents_filter = contents_filter
         .filter(|&w| w.len() == WORD_SIZE)
         .filter(|&w| {
