@@ -25,4 +25,6 @@ TODO:
 
 * Refactor cli arguments using clap.
 * Order results by best choice.
+    * Possibilities here include ordering by the highest number of, and best match/shortest hamming/Damerau-Levenshtein (or other) distance to other words; lack of repeated characters in unknown positions, etc.
 * Add logic for specifying that a character occurs more than once (shows up in Wordle as two more more blocks, 1 or more green, 1 or more yellow).
+* Refactor to an interactive prompt where you input words you tried and specify whether they were correct.
